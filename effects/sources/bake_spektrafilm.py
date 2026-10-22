@@ -34,7 +34,7 @@ RECIPES = {
     "portra-800-push2-v1": ("kodak_portra_800_push2", "kodak_portra_endura"),
     "kodachrome-64-v1": ("kodak_kodachrome_64", "kodak_portra_endura"),
     "velvia-100-v1": ("fujifilm_velvia_100", "kodak_portra_endura"),
-    "portra-160-ultra-v1": ("kodak_portra_160", "kodak_ultra_endura"),
+    "ektachrome-e100-v1": ("kodak_ektachrome_100", "kodak_portra_endura"),
 }
 
 _digest = params_builder.digest_params

@@ -538,6 +538,8 @@ pub const LICENSES: &str = concat!(
     include_str!("../../../LICENSE"),
     "```\n\n## Spectral Film LUT license\n\n```text\n",
     include_str!("../../../effects/sources/SPECTRAL_FILM_LUT_LICENSE.txt"),
+    "```\n\n## t3mujinpack license\n\n```text\n",
+    include_str!("../../../effects/sources/T3MUJINPACK_LICENSE.txt"),
     "```\n",
 );
 

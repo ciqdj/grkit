@@ -100,8 +100,8 @@ const en = {
     'Close, not exact. Strong looks and bright, saturated colors differ more. Check the preview.',
   importing: 'Fitting the LUT. This takes a few seconds…',
   importError: 'The LUT cannot be imported:',
-  importFull: (max: number) =>
-    `The page holds at most ${max} imported effects. Remove one to import another.`,
+  importUnchecked: (max: number) =>
+    `A package holds ${max} effects, and ${max} are checked. Uncheck another effect to include this one.`,
   imported: 'Imported',
   /** How closely an imported effect follows its LUT, by its grade (`fit::Grade`). The page
    * shows this text, not the grade. */
@@ -135,7 +135,7 @@ const en = {
   ready: 'GRKit.zip is ready.',
   buildError: 'GRKit.zip cannot be prepared. Check the connection and try again.',
   trademarks:
-    'GRKit is not affiliated with or endorsed by Ricoh, Kodak, or Fujifilm. Some camera, film, and paper names are trademarks of their owners.',
+    'GRKit is not affiliated with or endorsed by Ricoh, Kodak, Fujifilm, or Ilford. Some camera, film, and paper names are trademarks of their owners.',
   licenses: 'Effect licenses',
   thirdParty: 'Third-party licenses',
   recovery: 'Recovery guide',
@@ -188,12 +188,14 @@ const en = {
     'portra-800-push2-v1': 'Kodak Portra 800 pushed two stops to EI 3200, on Portra Endura paper',
     'kodachrome-64-v1': 'Kodak Kodachrome 64 slide film, scanned',
     'velvia-100-v1': 'Fujifilm Velvia 100 slide film, scanned',
-    'portra-160-ultra-v1': 'Kodak Portra 160 on Ultra Endura paper',
     'trix-400-mono-v1': 'Kodak Tri-X 400 on Polymax Fine-Art paper',
     'red-filter-mono-v1': 'Kodak Tri-X 400 behind a Wratten 25 red filter',
-    'fp-100c-v1': 'Fujifilm FP-100C instant film',
     'aerocolor-iv-v1': 'Kodak Aerocolor IV aerial negative on Portra Endura paper',
-    'exr-200t-2383-v1': 'Kodak EXR 200T on Vision 2383 print film',
+    'ektachrome-e100-v1': 'Kodak Ektachrome E100 slide film, scanned',
+    'eterna-500t-3523xd-v1': 'Fujifilm Eterna 500T 8573 on Eterna-CP 3523XD print film',
+    'instax-v1': 'Fujifilm Instax color instant film',
+    'double-x-5222-mono-v1': 'Kodak Double-X 5222 on Polymax Fine-Art paper',
+    'hp5-plus-400-mono-v1': 'Ilford HP5 Plus 400, after the t3mujinpack darktable style',
   } as Readonly<Record<string, string>>,
 };
 
@@ -282,7 +284,7 @@ const zhHans: Strings = {
     '只能接近，不能完全一致。风格强烈的 LUT 和明亮的鲜艳颜色差异更大，请以预览为准。',
   importing: '正在拟合 LUT，需要几秒钟…',
   importError: '无法导入这个 LUT：',
-  importFull: (max) => `本页最多保留 ${max} 个导入的效果。请先移除一个再导入。`,
+  importUnchecked: (max) => `一个安装包最多 ${max} 个效果，现在已勾选 ${max} 个。取消勾选另一个效果后，才能加入这个效果。`,
   imported: '导入',
   fitText: {
     A: '与 LUT 几乎相同。',
@@ -314,7 +316,7 @@ const zhHans: Strings = {
   ready: 'GRKit.zip 已就绪。',
   buildError: '无法准备 GRKit.zip。请检查网络后重试。',
   trademarks:
-    'GRKit 与 Ricoh、Kodak、Fujifilm 无关，也未获得它们的认可。部分相机、胶片和相纸名称是其所有者的商标。',
+    'GRKit 与 Ricoh、Kodak、Fujifilm、Ilford 无关，也未获得它们的认可。部分相机、胶片和相纸名称是其所有者的商标。',
   licenses: '效果许可',
   thirdParty: '第三方许可',
   recovery: '恢复指南',
@@ -361,12 +363,14 @@ const zhHans: Strings = {
     'portra-800-push2-v1': 'Kodak Portra 800 增感两档至 EI 3200，Portra Endura 相纸',
     'kodachrome-64-v1': 'Kodak Kodachrome 64 正片，直接扫描',
     'velvia-100-v1': 'Fujifilm Velvia 100 正片，直接扫描',
-    'portra-160-ultra-v1': 'Kodak Portra 160，Ultra Endura 相纸',
     'trix-400-mono-v1': 'Kodak Tri-X 400，Polymax Fine-Art 相纸',
     'red-filter-mono-v1': 'Kodak Tri-X 400 加 Wratten 25 红滤镜',
-    'fp-100c-v1': 'Fujifilm FP-100C 即显胶片',
     'aerocolor-iv-v1': 'Kodak Aerocolor IV 航拍负片，Portra Endura 相纸',
-    'exr-200t-2383-v1': 'Kodak EXR 200T，Vision 2383 拷贝片',
+    'ektachrome-e100-v1': 'Kodak Ektachrome E100 正片，直接扫描',
+    'eterna-500t-3523xd-v1': 'Fujifilm Eterna 500T 8573，Eterna-CP 3523XD 拷贝片',
+    'instax-v1': 'Fujifilm Instax 彩色即显胶片',
+    'double-x-5222-mono-v1': 'Kodak Double-X 5222，Polymax Fine-Art 相纸',
+    'hp5-plus-400-mono-v1': 'Ilford HP5 Plus 400，基于 t3mujinpack 的 darktable 风格',
   },
 };
 
@@ -453,7 +457,7 @@ const zhHant: Strings = {
     '只能接近，無法完全一致。風格強烈的 LUT 與明亮的鮮豔顏色差異較大，請以預覽為準。',
   importing: '正在擬合 LUT，需要幾秒鐘…',
   importError: '無法匯入這個 LUT：',
-  importFull: (max) => `本頁最多保留 ${max} 個匯入的效果。請先移除一個再匯入。`,
+  importUnchecked: (max) => `一個安裝包最多 ${max} 個效果，目前已勾選 ${max} 個。取消勾選另一個效果後，才能加入這個效果。`,
   imported: '匯入',
   fitText: {
     A: '與 LUT 幾乎相同。',
@@ -485,7 +489,7 @@ const zhHant: Strings = {
   ready: 'GRKit.zip 已就緒。',
   buildError: '無法準備 GRKit.zip。請檢查網路後再試。',
   trademarks:
-    'GRKit 與 Ricoh、Kodak、Fujifilm 無關，也未獲得其認可。部分相機、底片與相紙名稱為其所有者的商標。',
+    'GRKit 與 Ricoh、Kodak、Fujifilm、Ilford 無關，也未獲得其認可。部分相機、底片與相紙名稱為其所有者的商標。',
   licenses: '效果授權',
   thirdParty: '第三方授權',
   recovery: '復原指南',
@@ -532,12 +536,14 @@ const zhHant: Strings = {
     'portra-800-push2-v1': 'Kodak Portra 800 增感兩檔至 EI 3200，Portra Endura 相紙',
     'kodachrome-64-v1': 'Kodak Kodachrome 64 正片，直接掃描',
     'velvia-100-v1': 'Fujifilm Velvia 100 正片，直接掃描',
-    'portra-160-ultra-v1': 'Kodak Portra 160，Ultra Endura 相紙',
     'trix-400-mono-v1': 'Kodak Tri-X 400，Polymax Fine-Art 相紙',
     'red-filter-mono-v1': 'Kodak Tri-X 400 加 Wratten 25 紅濾鏡',
-    'fp-100c-v1': 'Fujifilm FP-100C 即顯底片',
     'aerocolor-iv-v1': 'Kodak Aerocolor IV 航拍負片，Portra Endura 相紙',
-    'exr-200t-2383-v1': 'Kodak EXR 200T，Vision 2383 拷貝片',
+    'ektachrome-e100-v1': 'Kodak Ektachrome E100 正片，直接掃描',
+    'eterna-500t-3523xd-v1': 'Fujifilm Eterna 500T 8573，Eterna-CP 3523XD 拷貝片',
+    'instax-v1': 'Fujifilm Instax 彩色即顯底片',
+    'double-x-5222-mono-v1': 'Kodak Double-X 5222，Polymax Fine-Art 相紙',
+    'hp5-plus-400-mono-v1': 'Ilford HP5 Plus 400，基於 t3mujinpack 的 darktable 風格',
   },
 };
 
@@ -624,8 +630,8 @@ const ja: Strings = {
     '近似であり、完全には一致しません。強い表現や明るく鮮やかな色ほど差が出ます。プレビューで確認してください。',
   importing: 'LUT をフィットしています。数秒かかります…',
   importError: 'この LUT は読み込めません：',
-  importFull: (max) =>
-    `読み込んだエフェクトはこのページに最大 ${max} 個まで保持できます。1 つ削除してから読み込んでください。`,
+  importUnchecked: (max) =>
+    `1 つのパッケージに入るエフェクトは最大 ${max} 個で、すでに ${max} 個を選択しています。このエフェクトを入れるには、ほかのエフェクトの選択を外してください。`,
   imported: '読み込み',
   fitText: {
     A: 'LUT とほぼ同じです。',
@@ -657,7 +663,7 @@ const ja: Strings = {
   ready: 'GRKit.zip の準備ができました。',
   buildError: 'GRKit.zip を準備できません。接続を確認して、もう一度お試しください。',
   trademarks:
-    'GRKit は Ricoh、Kodak、Fujifilm とは関係がなく、これらの企業の承認も受けていません。一部のカメラ、フィルム、印画紙の名称は、各所有者の商標です。',
+    'GRKit は Ricoh、Kodak、Fujifilm、Ilford とは関係がなく、これらの企業の承認も受けていません。一部のカメラ、フィルム、印画紙の名称は、各所有者の商標です。',
   licenses: 'エフェクトのライセンス',
   thirdParty: 'サードパーティーのライセンス',
   recovery: '復旧ガイド',
@@ -705,12 +711,14 @@ const ja: Strings = {
     'portra-800-push2-v1': 'Kodak Portra 800 を EI 3200 まで 2 段増感、Portra Endura 印画紙',
     'kodachrome-64-v1': 'リバーサルフィルム Kodak Kodachrome 64 をスキャン',
     'velvia-100-v1': 'リバーサルフィルム Fujifilm Velvia 100 をスキャン',
-    'portra-160-ultra-v1': 'Kodak Portra 160、Ultra Endura 印画紙',
     'trix-400-mono-v1': 'Kodak Tri-X 400、Polymax Fine-Art 印画紙',
     'red-filter-mono-v1': 'Wratten 25 赤フィルターを付けた Kodak Tri-X 400',
-    'fp-100c-v1': 'Fujifilm FP-100C インスタントフィルム',
     'aerocolor-iv-v1': 'Kodak Aerocolor IV 航空用ネガフィルム、Portra Endura 印画紙',
-    'exr-200t-2383-v1': 'Kodak EXR 200T、Vision 2383 プリントフィルム',
+    'ektachrome-e100-v1': 'リバーサルフィルム Kodak Ektachrome E100 をスキャン',
+    'eterna-500t-3523xd-v1': 'Fujifilm Eterna 500T 8573、Eterna-CP 3523XD プリントフィルム',
+    'instax-v1': 'Fujifilm Instax カラーインスタントフィルム',
+    'double-x-5222-mono-v1': 'Kodak Double-X 5222、Polymax Fine-Art 印画紙',
+    'hp5-plus-400-mono-v1': 'Ilford HP5 Plus 400、t3mujinpack の darktable スタイルによる',
   },
 };
 

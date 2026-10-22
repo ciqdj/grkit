@@ -56,14 +56,14 @@ LibRaw is distributed under CDDL-1.0. `THIRD_PARTY_LICENSES.txt` includes its no
 
 ## LUT import
 
-The Import a LUT button next to the preview fits a `.cube` file or a LUT image into an effect. It uses the fit of `grkit effects import` ([Import a .cube preset](../effects/README.md#import-a-cube-preset)). The page fits over the `base_gamma` of the `gr3-2.10` catalog. A catalog without it hides the button.
+The Import a LUT button next to the preview fits a `.cube` file or a LUT image into an effect. It uses the fit of `grkit effects import` ([Import a LUT](../effects/README.md#import-a-lut)). The page fits over the `base_gamma` of the `gr3-2.10` catalog. A catalog without it hides the button.
 
 1. The user selects a file. The dialog fills in the effect name and the icon from the file name.
 2. The Auto input is a guess from the LUT data. The dialog says what the guess cannot tell, so the user can select the input.
 3. After the fit, the dialog shows the input, how closely the effect follows the LUT, and the warnings.
-4. The page adds the effect to the table and selects it if the grade is A or B.
+4. The page adds the effect to the table and selects it if the grade is A or B and the package has room.
 
-Imported effects stay in the page memory, so a reload removes them. For an editor preset, the dialog offers an identity HALD image. The user applies the preset to it and imports the export with Standard input.
+The page checks every catalog effect until the user changes the selection. A user can import any number of LUTs, but a package holds at most 20 effects, so at most 20 can be checked. Imported effects stay in the page memory, so a reload removes them. For an editor preset, the dialog offers an identity HALD image. The user applies the preset to it and imports the export with Standard input.
 
 ## Default sample
 

@@ -118,6 +118,8 @@ fn each_catalog_effect_has_the_attribution_of_its_source() {
             ("spektrafilm", "CC-BY-SA-4.0")
         } else if generator.starts_with("Spectral Film LUT ") {
             ("Spectral Film LUT", "MIT")
+        } else if generator.starts_with("t3mujinpack ") {
+            ("t3mujinpack", "MIT")
         } else {
             panic!("{name}: no attribution for {generator}");
         };

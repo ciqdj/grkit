@@ -6,6 +6,6 @@
 export const STOCKS: Readonly<Record<string, { film: string; print?: string }>> = {
   'vision3-250d-2383-v1': { film: '5207', print: '2383' },
   'vision3-500t-2393-v1': { film: '5219', print: '2393' },
-  'exr-200t-2383-v1': { film: '5293', print: '2383' },
+  'eterna-500t-3523xd-v1': { film: '8573', print: '3523XD' },
   'aerocolor-iv-v1': { film: '2460' },
 };

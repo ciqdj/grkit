@@ -24,8 +24,9 @@ interface Props {
   baseGamma: Uint16Array;
   /** The IDs of the catalog effects and of the earlier imports. */
   taken: ReadonlySet<string>;
-  importedCount: number;
-  onImport: (effect: ImportedEffect) => void;
+  /** Adds the effect to the page. Returns true when the effect stays unchecked because the
+   * package already has `MAX_EFFECTS` checked effects. */
+  onImport: (effect: ImportedEffect) => boolean;
 }
 
 type Status =
@@ -33,7 +34,7 @@ type Status =
   /** `fraction`: the progress of the fit, from 0 to 1. */
   | { state: 'importing'; fraction: number }
   | { state: 'failed'; message: string }
-  | { state: 'done'; effect: ImportedEffect };
+  | { state: 'done'; effect: ImportedEffect; full: boolean };
 
 /** `auto` uses the input that the LUT data suggests (`guessInput`). */
 type InputChoice = 'auto' | Input;
@@ -45,7 +46,7 @@ const EMPTY_COVER: CoverFields = { brand: 'LUT', name: 'LUT', number: '', band: 
  * the page, with a film cover icon that the user can edit, then describes how closely the
  * effect follows the LUT and shows the warnings.
  */
-export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onImport }: Props) {
+export function ImportDialog({ strings: t, baseGamma, taken, onImport }: Props) {
   const ids = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -76,7 +77,6 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
     [fit, guess],
   );
 
-  const full = importedCount >= MAX_EFFECTS;
   const importing = status.state === 'importing';
   const reading = choice === 'auto' && guessed === null;
   const input: Input = choice === 'auto' ? (guessed ?? 'standard') : choice;
@@ -88,7 +88,6 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
     validCover(cover) &&
     coverError === null &&
     !reading &&
-    !full &&
     !importing;
 
   function reset() {
@@ -190,8 +189,8 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
         grade,
         warnings: warnings.length,
       });
-      onImport(imported.value);
-      setStatus({ state: 'done', effect: imported.value });
+      const full = onImport(imported.value);
+      setStatus({ state: 'done', effect: imported.value, full });
     } catch (error) {
       console.error(error);
       trackImport(file.name, input, choice !== 'auto', { result: 'failed' });
@@ -208,7 +207,7 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
     return INPUT_NAMES[item];
   }
 
-  const done = status.state === 'done' ? status.effect : null;
+  const done = status.state === 'done' ? status : null;
 
   return (
     <>
@@ -251,18 +250,19 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
         {done ? (
           <div className="dialog-body">
             <div className="import-done">
-              <CoverIcon cover={done.cover} />
+              <CoverIcon cover={done.effect.cover} />
               <div>
-                <p className="import-done-name">{done.name}</p>
-                <p className="status">{t.fitText[done.imported.grade]}</p>
-                <p className="status">{t.importUsed(INPUT_NAMES[done.imported.input])}</p>
+                <p className="import-done-name">{done.effect.name}</p>
+                <p className="status">{t.fitText[done.effect.imported.grade]}</p>
+                <p className="status">{t.importUsed(INPUT_NAMES[done.effect.imported.input])}</p>
               </div>
             </div>
-            {done.imported.warnings.length > 0 && (
+            {done.full && <p className="status">{t.importUnchecked(MAX_EFFECTS)}</p>}
+            {done.effect.imported.warnings.length > 0 && (
               <div className="import-result">
                 <p className="status error">{t.importWarnings}</p>
                 <ul className="import-warnings">
-                  {done.imported.warnings.map((warning) => (
+                  {done.effect.imported.warnings.map((warning) => (
                     <li key={warning} lang="en">
                       {warning}
                     </li>
@@ -271,7 +271,7 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
               </div>
             )}
             <div className="dialog-actions">
-              <button type="button" className="button" onClick={reset} disabled={full}>
+              <button type="button" className="button" onClick={reset}>
                 {t.importAnother}
               </button>
               <button type="button" className="button primary" onClick={close}>
@@ -283,7 +283,7 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
           <form className="dialog-body" onSubmit={submit}>
             <p className="note">{t.importNote}</p>
 
-            <label htmlFor={`${ids}-file`} className="upload" aria-disabled={importing || full}>
+            <label htmlFor={`${ids}-file`} className="upload" aria-disabled={importing}>
               <span className="import-file-name">{file?.name ?? t.importFile}</span>
             </label>
             <input
@@ -292,7 +292,7 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
               className="visually-hidden"
               type="file"
               accept={LUT_ACCEPT}
-              disabled={importing || full}
+              disabled={importing}
               onChange={chooseFile}
             />
 
@@ -396,7 +396,6 @@ export function ImportDialog({ strings: t, baseGamma, taken, importedCount, onIm
             </details>
 
             <div aria-live="polite">
-              {full && <p className="status">{t.importFull(MAX_EFFECTS)}</p>}
               {status.state === 'importing' && (
                 <div className="import-progress">
                   <p className="status">{t.importing}</p>

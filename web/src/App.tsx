@@ -1,7 +1,7 @@
-import { Suspense, useCallback, useRef, useState } from 'react';
+import { Suspense, use, useCallback, useRef, useState } from 'react';
 import { trackDownload, trackScriptsOff } from './analytics';
-import { CAMERAS, MODESET_TOKEN, selectedBuild, type Camera } from './cameras';
-import { loadCatalog, MAX_EFFECTS, siteUrl, type ImportedEffect } from './catalog';
+import { CAMERAS, MODESET_TOKEN, PREVIEW_TARGET, selectedBuild, type Camera } from './cameras';
+import { loadCatalog, siteUrl, type ImportedEffect } from './catalog';
 import { EffectsSection } from './components/EffectsSection';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RichText } from './components/RichText';
@@ -9,8 +9,8 @@ import { loadFonts } from './fonts';
 import { applyLanguage, initialLanguage, LANGUAGES, STRINGS, type Language } from './i18n';
 import { ALL_MODULES, MODULES, planModules, type ModuleKey } from './modules';
 import { buildPackage, buildScriptsOff, prefetchPackage, save } from './package';
+import { resolveSelection, type Selection } from './selection';
 
-const DEFAULT_SELECTION = ['portra-400-endura-v1', 'vision3-250d-2383-v1'];
 const REPOSITORY = 'https://github.com/ahonn/grkit';
 /** The Tally form for feature requests. A plain link, so the page loads nothing from Tally. */
 const FEATURE_REQUEST_FORM = 'https://tally.so/r/Z9jRgB';
@@ -35,7 +35,7 @@ export function App() {
   const [cameraKey, setCameraKey] = useState(CAMERAS[0]!.key);
   // The firmware version of each camera entry with more than one runtime build, as its target.
   const [targets, setTargets] = useState<Readonly<Record<string, string>>>({});
-  const [selection, setSelection] = useState<ReadonlySet<string>>(() => new Set(DEFAULT_SELECTION));
+  const [selection, setSelection] = useState<Selection>(null);
   const [enabled, setEnabled] = useState<ReadonlySet<ModuleKey>>(ALL_MODULES);
   // Effects fitted from LUTs on this page. They are not stored, so a reload removes them.
   const [imported, setImported] = useState<readonly ImportedEffect[]>([]);
@@ -48,8 +48,8 @@ export function App() {
   const support = camera.support;
   const runtime = selectedBuild(camera, targets[camera.key]);
   const available = support?.modules ?? [];
-  const plan = planModules(enabled, selection.size, available, support?.excluded);
-  const effectCount = plan.includeEffects ? selection.size : 0;
+  // Before the first change, every catalog effect is checked, so the count is not 0.
+  const plan = planModules(enabled, selection?.size ?? 1, available, support?.excluded);
 
   function prefetch() {
     if (runtime) prefetchPackage(runtime.target, camera.id, language);
@@ -101,20 +101,21 @@ export function App() {
     resetBuild();
   }
 
+  // The effects section checks an import (`selectImport`).
   function addImported(effect: ImportedEffect) {
     setImported((current) => [...current, effect]);
-    // An import selects its effect when it follows its LUT closely (grade A or B) and the
-    // package has room. A looser fit waits for the user to choose it.
-    const close = effect.imported.grade === 'A' || effect.imported.grade === 'B';
-    if (close && selection.size < MAX_EFFECTS) changeSelection(new Set(selection).add(effect.id));
-    else resetBuild();
+    resetBuild();
   }
 
   function removeImported(effect: ImportedEffect) {
     setImported((current) => current.filter((item) => item !== effect));
-    const next = new Set(selection);
-    next.delete(effect.id);
-    changeSelection(next);
+    if (selection?.has(effect.id)) {
+      const next = new Set(selection);
+      next.delete(effect.id);
+      changeSelection(next);
+    } else {
+      resetBuild();
+    }
   }
 
   function toggleModule(key: ModuleKey) {
@@ -149,10 +150,13 @@ export function App() {
     setBuild({ state: 'building', received: 0 });
     try {
       // Imported effects do not depend on the target, so each package can take them.
+      const catalog = (await loadCatalog(runtime.target)).effects;
+      const checked = resolveSelection(
+        selection,
+        catalog.map((effect) => effect.id),
+      );
       const effects = plan.includeEffects
-        ? [...(await loadCatalog(runtime.target)).effects, ...imported].filter((effect) =>
-            selection.has(effect.id),
-          )
+        ? [...catalog, ...imported].filter((effect) => checked.has(effect.id))
         : [];
       const blob = await buildPackage(
         runtime.target,
@@ -166,7 +170,7 @@ export function App() {
       );
       if (run === buildRun.current) {
         save(blob, 'GRKit.zip');
-        trackDownload(camera, runtime.target, plan, effectCount, language);
+        trackDownload(camera, runtime.target, plan, effects.length, language);
         setBuild({ state: 'ready' });
       }
     } catch (error) {
@@ -322,7 +326,7 @@ export function App() {
                     </span>
                     {module.key === 'imageControl' &&
                       enabled.has('imageControl') &&
-                      selection.size === 0 && (
+                      selection?.size === 0 && (
                         <span className="module-warning">{t.imageControlEmpty}</span>
                       )}
                   </span>
@@ -364,7 +368,17 @@ export function App() {
               <dt>{t.firmware}</dt>
               <dd>{runtime?.firmware ?? '—'}</dd>
               <dt>{t.effectCount}</dt>
-              <dd>{effectCount}</dd>
+              <dd>
+                {plan.includeEffects ? (
+                  <ErrorBoundary fallback="—">
+                    <Suspense fallback="—">
+                      <CheckedCount selection={selection} />
+                    </Suspense>
+                  </ErrorBoundary>
+                ) : (
+                  0
+                )}
+              </dd>
               <dt>{t.modules}</dt>
               <dd>
                 {plan.visible.length > 0
@@ -479,4 +493,13 @@ export function App() {
       </footer>
     </div>
   );
+}
+
+/** The number of checked effects. Before the first change, it needs the catalog. */
+function CheckedCount({ selection }: { selection: Selection }) {
+  const catalog = use(loadCatalog(PREVIEW_TARGET));
+  return resolveSelection(
+    selection,
+    catalog.effects.map((effect) => effect.id),
+  ).size;
 }

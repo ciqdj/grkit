@@ -15,7 +15,7 @@ Photo: [Snow in Akihabara](https://www.flickr.com/photos/cafetricot/51803682755/
 
 GRKit adds a sixth entry, GRK, to the ADJ menu. It has five modules:
 
-- **Image Control**: 16 film looks, such as Portra 400, Velvia 100, and Tri-X 400. The viewfinder previews the look.
+- **Image Control**: film looks such as Portra 400, Velvia 100, and Tri-X 400. The viewfinder previews the look.
 - **Framing**: XPan (65:24), 16:9, or 4:3 photos. The viewfinder dims the area outside the photo.
 - **Guides**: thirds, center, golden ratio, or diagonal lines.
 - **Date Imprint**: an orange date on the photo, like a film camera's data back.

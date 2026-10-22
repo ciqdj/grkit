@@ -115,10 +115,14 @@ fn cube_fits_record_their_pinned_luts() {
         if attribution["origin"] != "cube-fit" {
             continue;
         }
+        // A .cube LUT, or a HaldCLUT image, named after the effect.
         let source = attribution["source"].as_str().unwrap();
-        assert_eq!(
-            source,
-            format!("{}.cube", definition["effect_id"].as_str().unwrap())
+        let id = definition["effect_id"].as_str().unwrap();
+        assert!(
+            [".cube", ".png"]
+                .iter()
+                .any(|extension| source == format!("{id}{extension}")),
+            "{source}"
         );
         let lut = &luts[source];
         assert_eq!(lut["sha256"], attribution["source_sha256"], "{source}");
@@ -483,9 +487,10 @@ fn published_cover_icons_show_the_words_of_the_effect_name() {
         let icon = &definition["icon"];
         let name = definition["name"].as_str().unwrap();
         assert!(icon.get("template").is_some(), "{name} has no cover icon");
+        // A cover without a number shows the name large, as Instax does.
         let (series, number) = (
             icon["name"].as_str().unwrap(),
-            icon["number"].as_str().unwrap(),
+            icon["number"].as_str().unwrap_or(""),
         );
         if icon["template"] == "cine" && series.bytes().all(|c| c.is_ascii_digit()) {
             let target = definition["attribution"]["target"].as_str().unwrap();
@@ -498,7 +503,7 @@ fn published_cover_icons_show_the_words_of_the_effect_name() {
             assert_eq!(words(&format!("{series} {number}")), words(name), "{name}");
         }
         assert!(
-            ["Kodak", "FUJIFILM"].contains(&icon["brand"].as_str().unwrap()),
+            ["Kodak", "FUJIFILM", "ILFORD"].contains(&icon["brand"].as_str().unwrap()),
             "{name}"
         );
     }

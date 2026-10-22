@@ -22,6 +22,7 @@ import type { Language, Strings } from '../i18n';
 import { forget, preview, type PreviewEffect, type Source } from '../preview/render';
 import { DEFAULT_SAMPLE } from '../preview/samples';
 import { PhotoLoader } from '../preview/raw';
+import { resolveSelection, selectImport, type Selection } from '../selection';
 import { STOCKS } from '../stocks';
 import { EffectIcon } from './EffectIcon';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -37,7 +38,7 @@ function stockText(stock: (typeof STOCKS)[string] & {}, t: Strings): string {
 interface Props {
   strings: Strings;
   language: Language;
-  selection: ReadonlySet<string>;
+  selection: Selection;
   onSelectionChange: (selection: ReadonlySet<string>) => void;
   /** The effects that this page fitted from LUTs, after the catalog effects. */
   imported: readonly ImportedEffect[];
@@ -55,6 +56,10 @@ export function EffectsSection({
 }: Props) {
   const catalog = use(loadCatalog(PREVIEW_TARGET));
   const effects: readonly Effect[] = [...catalog.effects, ...imported];
+  const checked = resolveSelection(
+    selection,
+    catalog.effects.map((effect) => effect.id),
+  );
   const taken = new Set(effects.map((effect) => effect.id));
   const [previewId, setPreviewId] = useState(DEFAULT_PREVIEW);
   const [source, setSource] = useState<Source>(DEFAULT_SAMPLE);
@@ -78,7 +83,7 @@ export function EffectsSection({
   const name = shown?.name ?? '';
 
   function toggle(effect: Effect) {
-    const next = new Set(selection);
+    const next = new Set(checked);
     if (next.has(effect.id)) {
       next.delete(effect.id);
     } else if (next.size < MAX_EFFECTS) {
@@ -91,9 +96,14 @@ export function EffectsSection({
     startTransition(() => setPreviewId(effect.id));
   }
 
-  function importEffect(effect: ImportedEffect) {
+  /** Adds an import and checks it if it fits closely and the package has room. Returns true
+   * when the package had no room. */
+  function importEffect(effect: ImportedEffect): boolean {
     onImport(effect);
+    const { selection: next, full } = selectImport(checked, effect.id, effect.imported.grade);
+    if (next !== checked) onSelectionChange(next);
     showEffect(effect);
+    return full;
   }
 
   function showSample() {
@@ -235,7 +245,6 @@ export function EffectsSection({
               strings={t}
               baseGamma={catalog.baseGamma}
               taken={taken}
-              importedCount={imported.length}
               onImport={importEffect}
             />
           )}
@@ -245,7 +254,7 @@ export function EffectsSection({
       <div className="toolbar">
         <p>
           {t.count(MAX_EFFECTS)[0]}
-          <span className="count">{selection.size}</span>
+          <span className="count">{checked.size}</span>
           {t.count(MAX_EFFECTS)[1]}
         </p>
         <div>
@@ -253,9 +262,7 @@ export function EffectsSection({
             type="button"
             className="button"
             onClick={() =>
-              onSelectionChange(
-                new Set(catalog.effects.slice(0, MAX_EFFECTS).map((effect) => effect.id)),
-              )
+              onSelectionChange(new Set(effects.slice(0, MAX_EFFECTS).map((effect) => effect.id)))
             }
           >
             {t.selectAll}
@@ -291,8 +298,8 @@ export function EffectsSection({
                   <input
                     id={`effect-${effect.id}`}
                     type="checkbox"
-                    checked={selection.has(effect.id)}
-                    disabled={!selection.has(effect.id) && selection.size >= MAX_EFFECTS}
+                    checked={checked.has(effect.id)}
+                    disabled={!checked.has(effect.id) && checked.size >= MAX_EFFECTS}
                     onChange={() => toggle(effect)}
                   />
                 </td>
