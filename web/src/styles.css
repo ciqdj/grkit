@@ -1000,6 +1000,17 @@ td input[type='checkbox'] {
   gap: 12px;
 }
 
+/* Links under Download, styled as the footer links. */
+.package-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
 .steps {
   flex: 999 1 640px;
   min-width: 0;

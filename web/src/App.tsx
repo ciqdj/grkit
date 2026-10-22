@@ -412,6 +412,14 @@ export function App() {
                 {build.state === 'ready' && <p className="status">{t.ready}</p>}
                 {build.state === 'failed' && <p className="status error">{t.buildError}</p>}
               </div>
+              <ul className="package-links">
+                <li>
+                  <a href={FEATURE_REQUEST_FORM}>{t.featureRequest}</a>
+                </li>
+                <li>
+                  <a href={DONATE}>{t.donate}</a>
+                </li>
+              </ul>
             </div>
           </div>
         </section>
@@ -469,12 +477,6 @@ export function App() {
             </li>
             <li>
               <a href={guideUrl('DUMP', language)}>{t.firmwareDump}</a>
-            </li>
-            <li>
-              <a href={FEATURE_REQUEST_FORM}>{t.featureRequest}</a>
-            </li>
-            <li>
-              <a href={DONATE}>{t.donate}</a>
             </li>
           </ul>
           <ul>
